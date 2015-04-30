@@ -14,6 +14,7 @@
 		8E9353881AF213E500DD0B22 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E9353871AF213E500DD0B22 /* Images.xcassets */; };
 		8E93538B1AF213E500DD0B22 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8E9353891AF213E500DD0B22 /* LaunchScreen.xib */; };
 		8E9353971AF213E500DD0B22 /* NoiseControlTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E9353961AF213E500DD0B22 /* NoiseControlTests.m */; };
+		8E9353A11AF2219E00DD0B22 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E9353A01AF2219E00DD0B22 /* AudioToolbox.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +41,7 @@
 		8E9353901AF213E500DD0B22 /* NoiseControlTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NoiseControlTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9353951AF213E500DD0B22 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E9353961AF213E500DD0B22 /* NoiseControlTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NoiseControlTests.m; sourceTree = "<group>"; };
+		8E9353A01AF2219E00DD0B22 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E9353A11AF2219E00DD0B22 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +66,7 @@
 		8E93536E1AF213E500DD0B22 = {
 			isa = PBXGroup;
 			children = (
+				8E9353A01AF2219E00DD0B22 /* AudioToolbox.framework */,
 				8E9353791AF213E500DD0B22 /* NoiseControl */,
 				8E9353931AF213E500DD0B22 /* NoiseControlTests */,
 				8E9353781AF213E500DD0B22 /* Products */,
@@ -416,6 +420,7 @@
 				8E93539C1AF213E500DD0B22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8E93539D1AF213E500DD0B22 /* Build configuration list for PBXNativeTarget "NoiseControlTests" */ = {
 			isa = XCConfigurationList;
@@ -424,6 +429,7 @@
 				8E93539F1AF213E500DD0B22 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
