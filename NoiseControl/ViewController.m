@@ -26,6 +26,16 @@ static void CheckError(OSStatus error, const char *operation)
     exit(1);
 }
 
+OSStatus InputCallback(void *inRefCon,
+                       AudioUnitRenderActionFlags *ioActionFlags,
+                       const AudioTimeStamp *inTimeStamp,
+                       UInt32 inBusNumber,
+                       UInt32 inNumberFrames,
+                       AudioBufferList *ioData){
+    //TODO: implement this function
+    return noErr;
+}
+
 @interface ViewController ()
 
 @end
@@ -70,6 +80,9 @@ static void CheckError(OSStatus error, const char *operation)
                "Open output of bus 0 failed");
     
     //Connect output of input bus to input of output bus
+    //This will easily playback to the output speaker
+    //But we will set the render callback, so we'll not use this function
+    /*
     AudioUnitConnection connection;
     connection.sourceAudioUnit = remoteIOUnit;
     connection.sourceOutputNumber = 1;
@@ -81,6 +94,20 @@ static void CheckError(OSStatus error, const char *operation)
                                     &connection,
                                     sizeof(connection)),
                "kAudioUnitProperty_MakeConnection failed");
+     */
+    
+    //TODO: Set stream format of output of input bus and input of output bus
+    
+    AURenderCallbackStruct input;
+    input.inputProc = InputCallback;
+    input.inputProcRefCon = (__bridge void *)(self);
+    CheckError(AudioUnitSetProperty(remoteIOUnit,
+                                    kAudioUnitProperty_SetRenderCallback,
+                                    kAudioUnitScope_Global,
+                                    0,//input mic
+                                    &input,
+                                    sizeof(input)),
+               "kAudioUnitProperty_SetRenderCallback failed");
     
     //Initialize the unit and start
     AudioUnitInitialize(remoteIOUnit);
