@@ -7,6 +7,15 @@
 //
 
 #import "ViewController.h"
+#import <Accelerate/Accelerate.h>
+
+#define FILTER_LENGTH 100
+#define DELTA         0.01
+
+float input[FILTER_LENGTH];//最近的录音，作为输入
+float filter[FILTER_LENGTH];//滤波器
+float error;//误差估计
+float filterResult[FILTER_LENGTH];//滤波结果
 
 static void CheckError(OSStatus error, const char *operation)
 {
@@ -43,6 +52,43 @@ OSStatus InputCallback(void *inRefCon,
                                ioData),
                "AudioUnitRender failed");
     
+    //Do LSM noise control
+    AudioBuffer buffer = ioData->mBuffers[0];
+    SInt16 sample = 0;
+    SInt16 filteredSample = 0;
+    int currentFrame = 0;
+    UInt32 bytesPerChannel = controller.streamFormat.mBytesPerFrame/controller.streamFormat.mChannelsPerFrame;
+    while (currentFrame<inNumberFrames) {
+        for (int currentChannel=0; currentChannel<buffer.mNumberChannels; currentChannel++) {
+            //Copy sample to buffer, across all channels
+            memcpy(&sample,
+                   buffer.mData+(currentFrame*controller.streamFormat.mBytesPerFrame) + currentChannel*bytesPerChannel,
+                   sizeof(sample));
+            
+            //Generate output value, based on LSM algorithm
+            for (int i=0; i<FILTER_LENGTH-1; i++) {
+                input[i] = input[i+1];
+            }
+            input[FILTER_LENGTH-1] = sample;
+            
+            for (int j=0; j<FILTER_LENGTH; j++) {
+                filteredSample += filter[j] * input[j];
+            }
+            
+            error = sample - filteredSample;
+            for (int i=0; i<FILTER_LENGTH-1; i++) {
+                filter[i] = filter[i+1];
+            }
+            filter[FILTER_LENGTH-1] = 2*DELTA*error*sample;
+     
+            
+            memcpy(buffer.mData+(currentFrame*controller.streamFormat.mBytesPerFrame) + currentChannel*bytesPerChannel,
+                          &sample,
+                          sizeof(sample));
+        }
+        currentFrame++;
+    }
+    
     return noErr;
 }
 
@@ -53,12 +99,20 @@ OSStatus InputCallback(void *inRefCon,
 @implementation ViewController
 
 @synthesize remoteIOUnit;
+@synthesize streamFormat;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    //Set up a RemoteIO to synchronously playback
     
+    //Initialize the LSM filter params
+    for (int i=0; i<FILTER_LENGTH; i++) {
+        input[i]        = 0.0;
+        filter[i]       = 0.0;
+        filterResult[i] = 0.0;
+        error           = 0.0;
+    }
+    
+    //Set up a RemoteIO to synchronously playback
     AudioComponentDescription inputcd = {0};
     inputcd.componentType = kAudioUnitType_Output;
     inputcd.componentSubType = kAudioUnitSubType_RemoteIO;
@@ -107,30 +161,29 @@ OSStatus InputCallback(void *inRefCon,
                "kAudioUnitProperty_MakeConnection failed");
      */
     
-    AudioStreamBasicDescription asbd = {0};
-    asbd.mFormatID = kAudioFormatLinearPCM;
-    asbd.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    asbd.mSampleRate = 44100;
-    asbd.mFramesPerPacket = 1;
-    asbd.mBytesPerFrame = 2;
-    asbd.mBytesPerPacket = 2;
-    asbd.mBitsPerChannel = 16;
-    asbd.mChannelsPerFrame = 1;
+    streamFormat.mFormatID = kAudioFormatLinearPCM;
+    streamFormat.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+    streamFormat.mSampleRate = 44100;
+    streamFormat.mFramesPerPacket = 1;
+    streamFormat.mBytesPerFrame = 2;
+    streamFormat.mBytesPerPacket = 2;
+    streamFormat.mBitsPerChannel = 16;
+    streamFormat.mChannelsPerFrame = 1;
     
     CheckError(AudioUnitSetProperty(remoteIOUnit,
                                     kAudioUnitProperty_StreamFormat,
                                     kAudioUnitScope_Input,
                                     0,
-                                    &asbd,
-                                    sizeof(asbd)),
+                                    &streamFormat,
+                                    sizeof(streamFormat)),
                "kAudioUnitProperty_StreamFormat of bus 0 failed");
     
     CheckError(AudioUnitSetProperty(remoteIOUnit,
                                     kAudioUnitProperty_StreamFormat,
                                     kAudioUnitScope_Output,
                                     1,
-                                    &asbd,
-                                    sizeof(asbd)),
+                                    &streamFormat,
+                                    sizeof(streamFormat)),
                "kAudioUnitProperty_StreamFormat of bus 1 failed");
     
     AURenderCallbackStruct input;

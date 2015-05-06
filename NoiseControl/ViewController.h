@@ -12,6 +12,7 @@
 @interface ViewController : UIViewController
 
 @property(nonatomic,assign)AudioUnit remoteIOUnit;
+@property(nonatomic,assign)AudioStreamBasicDescription streamFormat;
 
 @end
 
