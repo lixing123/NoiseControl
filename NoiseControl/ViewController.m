@@ -7,7 +7,6 @@
 //
 
 #import "ViewController.h"
-#import <AudioToolbox/AudioToolbox.h>
 
 static void CheckError(OSStatus error, const char *operation)
 {
@@ -33,6 +32,17 @@ OSStatus InputCallback(void *inRefCon,
                        UInt32 inNumberFrames,
                        AudioBufferList *ioData){
     //TODO: implement this function
+    ViewController* controller = (__bridge ViewController*)inRefCon;
+    
+    //Get samples from input bus(bus 1)
+    CheckError(AudioUnitRender(controller.remoteIOUnit,
+                               ioActionFlags,
+                               inTimeStamp,
+                               1,
+                               inNumberFrames,
+                               ioData),
+               "AudioUnitRender failed");
+    
     return noErr;
 }
 
@@ -42,11 +52,12 @@ OSStatus InputCallback(void *inRefCon,
 
 @implementation ViewController
 
+@synthesize remoteIOUnit;
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     //Set up a RemoteIO to synchronously playback
-    AudioUnit remoteIOUnit;
     
     AudioComponentDescription inputcd = {0};
     inputcd.componentType = kAudioUnitType_Output;

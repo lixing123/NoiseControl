@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 @interface ViewController : UIViewController
 
+@property(nonatomic,assign)AudioUnit remoteIOUnit;
 
 @end
 
