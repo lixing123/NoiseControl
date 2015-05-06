@@ -96,7 +96,31 @@ OSStatus InputCallback(void *inRefCon,
                "kAudioUnitProperty_MakeConnection failed");
      */
     
-    //TODO: Set stream format of output of input bus and input of output bus
+    AudioStreamBasicDescription asbd = {0};
+    asbd.mFormatID = kAudioFormatLinearPCM;
+    asbd.mFormatFlags = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+    asbd.mSampleRate = 44100;
+    asbd.mFramesPerPacket = 1;
+    asbd.mBytesPerFrame = 2;
+    asbd.mBytesPerPacket = 2;
+    asbd.mBitsPerChannel = 16;
+    asbd.mChannelsPerFrame = 1;
+    
+    CheckError(AudioUnitSetProperty(remoteIOUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Input,
+                                    0,
+                                    &asbd,
+                                    sizeof(asbd)),
+               "kAudioUnitProperty_StreamFormat of bus 0 failed");
+    
+    CheckError(AudioUnitSetProperty(remoteIOUnit,
+                                    kAudioUnitProperty_StreamFormat,
+                                    kAudioUnitScope_Output,
+                                    1,
+                                    &asbd,
+                                    sizeof(asbd)),
+               "kAudioUnitProperty_StreamFormat of bus 1 failed");
     
     AURenderCallbackStruct input;
     input.inputProc = InputCallback;
